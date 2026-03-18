@@ -51,5 +51,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release
 
-[Unreleased]: https://github.com/jchultarsky101/dirloom/compare/v0.1.0...HEAD
+## [0.2.0] - 2026-03-18
+
+### Added
+- Directory picker dialog with keyboard navigation
+- Help screen modal with keyboard shortcuts
+- Force sync mode (overwrites all files)
+- Clear widget for solid modal backgrounds
+
+### Changed
+- Mode cycling now includes Force mode
+- Visual mode indicators with icons and colors
+
+[Unreleased]: https://github.com/jchultarsky101/dirloom/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/jchultarsky101/dirloom/releases/tag/v0.2.0
 [0.1.0]: https://github.com/jchultarsky101/dirloom/releases/tag/v0.1.0
