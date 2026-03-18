@@ -23,12 +23,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive unit tests (24 tests)
 - Integration tests (9 tests)
 - Test data directory structure
+- Directory picker dialog with keyboard navigation (Enter to open, Tab/Space to select)
+- Help screen modal with keyboard shortcuts and mode descriptions
+- Force sync mode (⚡ overwrites all files regardless of content)
 
 ### Changed
 - Replaced anyhow with thiserror for better error handling
 - Enhanced TUI with improved styling and emoji indicators
 - Added parallel processing for better performance
 - Improved logging with emojis for better readability
+- Fixed modal transparency with Clear widget for solid backgrounds
+- Updated mode cycling: Mirror → Incremental → Update → Force → Mirror
+- Added visual mode indicators (🪞 Mirror, 📈 Incremental, 🔄 Update, ⚡ Force)
 
 ### Deprecated
 

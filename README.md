@@ -12,12 +12,15 @@ A CLI TUI application for backing up directories and all subdirectories to anoth
 - ⚡ **Fast & Reliable** - Built with Rust for performance and safety
 - 📋 **Easy Configuration** - Simple CLI arguments powered by [`clap`](https://docs.rs/clap)
 - 🔄 **Multiple Sync Modes**:
-  - **Mirror**: Destination matches source exactly (deletes extra files)
-  - **Incremental**: Only copy changed or new files (preserves extra files)
-  - **Update**: Copy newer files, don't delete anything
+  - **🪞 Mirror**: Destination matches source exactly (deletes extra files)
+  - **📈 Incremental**: Only copy changed or new files (preserves extra files)
+  - **🔄 Update**: Copy newer files, don't delete anything
+  - **⚡ Force**: Overwrite ALL files regardless of existing content
 - 🚫 **Exclude Patterns** - Skip files matching glob patterns (e.g., `*.tmp`, `node_modules`)
 - 🔍 **Dry-run Mode** - Preview changes without modifying files
 - 📊 **Progress Tracking** - Real-time progress display during backup operations
+- 📁 **Directory Picker** - Interactive file browser for selecting source/destination
+- ❓ **Help Screen** - Built-in help with keyboard shortcuts and mode descriptions
 
 ## Installation
 
@@ -73,10 +76,21 @@ RUST_LOG=dirloom=trace dirloom /source /destination
 
 Once the TUI opens:
 
+**General:**
 - **Space** - Start/restart backup
-- **q** - Cancel (during backup) or Quit
+- **m** - Cycle sync mode (Mirror → Incremental → Update → Force)
+- **1** or **s** - Open source directory picker
+- **2** or **d** - Open destination directory picker
+- **?** or **h** - Show help screen
+- **q** or **Esc** - Cancel (during backup) or Quit
 - **r** - Reset after completion
-- **Esc** - Quit
+
+**Directory Picker:**
+- **↑/↓** or **j/k** - Navigate list
+- **Enter** or **→** - Open selected directory
+- **Tab** or **Space** - Select current directory
+- **Backspace** or **←** - Go to parent directory
+- **Esc** - Cancel picker
 
 ### Command Line Options
 
