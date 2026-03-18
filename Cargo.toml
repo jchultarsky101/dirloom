@@ -1,0 +1,28 @@
+[package]
+name = "dirloom"
+version = "0.1.0"
+edition = "2024"
+description = "A CLI TUI for backing up directories to another location"
+license = "MIT"
+repository = "https://github.com/jchultarsky101/dirloom.git"
+readme = "README.md"
+keywords = ["backup", "cli", "tui", "sync"]
+categories = ["command-line-utilities"]
+
+[dependencies]
+clap = { version = "4.5", features = ["derive"] }
+ratatui = "0.29"
+crossterm = "0.28"
+walkdir = "2.5"
+thiserror = "2.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+rayon = "1.10"
+
+[dev-dependencies]
+tempfile = "3.14"
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
