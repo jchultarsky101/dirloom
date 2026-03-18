@@ -328,3 +328,4 @@ dirloom/
 
 ## Qwen Added Memories
 - User is developing an open source Rust CLI TUI backup tool called "dirloom" at https://github.com/jchultarsky101/dirloom.git. The project uses Git Flow workflow, cargo-dist for releases, clap for CLI, ratatui for TUI, tracing for logging, thiserror for errors, and rayon for parallel processing.
+- Dirloom v0.2.0 released 2026-03-18. Features: Force sync mode, directory picker dialog, help screen modal, solid modal backgrounds with Clear widget. Tech: Rust, ratatui TUI, clap CLI, thiserror, tracing, rayon parallel processing. Keyboard: [m] mode, [1/2] pickers, [?] help, [Tab/Space] select, [Enter] open.
