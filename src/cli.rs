@@ -44,6 +44,9 @@ pub enum SyncMode {
 
     /// Update: copy newer files, don't delete anything
     Update,
+
+    /// Force: overwrite all files regardless of existing content
+    Force,
 }
 
 #[cfg(test)]

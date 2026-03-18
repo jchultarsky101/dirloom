@@ -19,6 +19,8 @@ pub enum SyncMode {
     Incremental,
     /// Update: copy newer files, don't delete anything
     Update,
+    /// Force: overwrite all files regardless of existing content
+    Force,
 }
 
 /// Result of a backup operation
@@ -399,6 +401,56 @@ pub fn update_sync(
     Ok(result)
 }
 
+/// Perform force sync: overwrite all files regardless of existing content
+pub fn force_sync(
+    source: &Path,
+    dest: &Path,
+    exclude_patterns: &[String],
+    progress: &ProgressTracker,
+    dry_run: bool,
+) -> Result<BackupResult> {
+    info!(
+        "⚡ Starting force sync: {} → {}",
+        source.display(),
+        dest.display()
+    );
+    if dry_run {
+        warn!("🔍 Dry run mode - no changes will be made");
+    }
+
+    let mut result = BackupResult::default();
+
+    // Scan source files
+    progress.start_file("🔍 Scanning source…");
+    let source_files = scan_source(source, exclude_patterns)?;
+    let total_size = calculate_total_size(source, &source_files);
+    progress.set_total(source_files.len() as u64, total_size);
+
+    // Process files in parallel - copy ALL files (no skipping)
+    let results: Vec<(bool, bool)> = source_files
+        .par_iter()
+        .map_with(
+            (source, dest, progress, dry_run),
+            |(src, dst, prog, dry), relative| {
+                process_file(relative, src, dst, prog, *dry, |_s, _d| Ok(true))
+            },
+        )
+        .collect();
+
+    // Aggregate results
+    for (copied, error) in results {
+        if error {
+            result.errors += 1;
+        } else if copied {
+            result.copied += 1;
+        }
+    }
+
+    // Don't delete files in force mode (only overwrite)
+    progress.complete();
+    Ok(result)
+}
+
 /// Run backup based on sync mode
 pub fn run_backup(
     source: &Path,
@@ -443,6 +495,7 @@ pub fn run_backup(
             incremental_sync(source, dest, exclude_patterns, progress, dry_run)
         }
         SyncMode::Update => update_sync(source, dest, exclude_patterns, progress, dry_run),
+        SyncMode::Force => force_sync(source, dest, exclude_patterns, progress, dry_run),
     };
 
     match &result {

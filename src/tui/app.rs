@@ -8,6 +8,9 @@ use tracing::{error, info};
 
 use crate::backup::{Progress, ProgressTracker, SyncMode, run_backup};
 
+use super::dir_picker::DirPicker;
+use super::log_buffer::LogBuffer;
+
 /// Application states
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AppState {
@@ -21,6 +24,15 @@ pub enum AppState {
     Cancelled,
     /// Backup encountered errors
     Error,
+    /// Directory picker is active
+    PickingDirectory,
+}
+
+/// Which field is being edited
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EditField {
+    Source,
+    Destination,
 }
 
 /// Application state and logic
@@ -47,6 +59,14 @@ pub struct App {
     pub cancel_flag: Arc<AtomicBool>,
     /// Whether to exit the application
     pub should_exit: bool,
+    /// Log buffer for TUI display
+    pub log_buffer: LogBuffer,
+    /// Directory picker dialog
+    pub dir_picker: Option<DirPicker>,
+    /// Which field is being picked (Source or Destination)
+    pub edit_field: Option<EditField>,
+    /// Whether help dialog is shown
+    pub show_help: bool,
 }
 
 impl App {
@@ -70,7 +90,37 @@ impl App {
             error_message: None,
             cancel_flag: Arc::new(AtomicBool::new(false)),
             should_exit: false,
+            log_buffer: LogBuffer::new(),
+            dir_picker: None,
+            edit_field: None,
+            show_help: false,
         }
+    }
+
+    /// Open directory picker for the specified field
+    pub fn open_dir_picker(&mut self, field: EditField) {
+        let start_path = match field {
+            EditField::Source => self.source.clone(),
+            EditField::Destination => self.destination.clone(),
+        };
+        self.dir_picker = Some(DirPicker::new(start_path));
+        self.edit_field = Some(field);
+        self.state = AppState::PickingDirectory;
+    }
+
+    /// Close directory picker and apply result
+    pub fn close_dir_picker(&mut self) {
+        if let Some(picker) = self.dir_picker.take()
+            && let Some(result) = picker.result
+        {
+            match self.edit_field {
+                Some(EditField::Source) => self.source = result,
+                Some(EditField::Destination) => self.destination = result,
+                None => {}
+            }
+        }
+        self.edit_field = None;
+        self.state = AppState::Ready;
     }
 
     /// Start the backup operation in a background thread
@@ -140,6 +190,35 @@ impl App {
 
     /// Handle key events
     pub fn handle_key(&mut self, key: KeyCode) {
+        // Handle directory picker input
+        if self.state == AppState::PickingDirectory {
+            if let Some(picker) = self.dir_picker.as_mut() {
+                match key {
+                    KeyCode::Up | KeyCode::Char('k') => picker.move_up(),
+                    KeyCode::Down | KeyCode::Char('j') => picker.move_down(),
+                    KeyCode::Enter | KeyCode::Right | KeyCode::Char('l') => {
+                        // Enter navigates into directory
+                        picker.enter_directory();
+                    }
+                    KeyCode::Tab | KeyCode::Char(' ') => {
+                        // Tab or Space selects current directory
+                        picker.select_current();
+                        self.close_dir_picker();
+                    }
+                    KeyCode::Backspace | KeyCode::Left | KeyCode::Char('h') => {
+                        picker.go_up();
+                    }
+                    KeyCode::Esc | KeyCode::Char('q') => {
+                        picker.cancel();
+                        self.close_dir_picker();
+                    }
+                    _ => {}
+                }
+            }
+            return;
+        }
+
+        // Handle normal app input
         match key {
             KeyCode::Char('q') | KeyCode::Esc => {
                 if self.state == AppState::Running {
@@ -164,14 +243,54 @@ impl App {
                     self.error_message = None;
                 }
             }
+            // Open directory picker for source (1) or destination (2)
+            KeyCode::Char('1') => {
+                if self.state == AppState::Ready {
+                    self.open_dir_picker(EditField::Source);
+                }
+            }
+            KeyCode::Char('2') => {
+                if self.state == AppState::Ready {
+                    self.open_dir_picker(EditField::Destination);
+                }
+            }
+            KeyCode::Char('s') => {
+                // Shortcut for source picker
+                if self.state == AppState::Ready {
+                    self.open_dir_picker(EditField::Source);
+                }
+            }
+            KeyCode::Char('d') => {
+                // Shortcut for destination picker
+                if self.state == AppState::Ready {
+                    self.open_dir_picker(EditField::Destination);
+                }
+            }
+            KeyCode::Char('m') => {
+                // Cycle through backup modes: Mirror → Incremental → Update → Force → Mirror
+                if self.state == AppState::Ready {
+                    self.mode = match self.mode {
+                        SyncMode::Mirror => SyncMode::Incremental,
+                        SyncMode::Incremental => SyncMode::Update,
+                        SyncMode::Update => SyncMode::Force,
+                        SyncMode::Force => SyncMode::Mirror,
+                    };
+                }
+            }
+            KeyCode::Char('?') | KeyCode::Char('h') => {
+                // Toggle help dialog
+                if self.state == AppState::Ready {
+                    self.show_help = !self.show_help;
+                }
+            }
             _ => {}
         }
     }
 
     /// Run the TUI application
     pub fn run(&mut self, mut terminal: DefaultTerminal) -> Result<(), Box<dyn std::error::Error>> {
-        // Start backup automatically
-        self.start_backup();
+        // Initialize TUI tracing with log buffer
+        super::log_buffer::init_tui_tracing(self.log_buffer.clone());
 
         loop {
             terminal.draw(|frame| {
@@ -206,6 +325,7 @@ impl App {
             AppState::Complete => "🌻 Dirloom - Complete ✨",
             AppState::Cancelled => "🌻 Dirloom - Cancelled",
             AppState::Error => "🌻 Dirloom - Error",
+            AppState::PickingDirectory => "🌻 Dirloom - Select Directory",
         }
     }
 
@@ -218,6 +338,7 @@ impl App {
             AppState::Complete => "Press [r] to reset, [q] to quit",
             AppState::Cancelled => "Press [r] to reset, [q] to quit",
             AppState::Error => "Press [r] to reset, [q] to quit",
+            AppState::PickingDirectory => "Navigate with ↑/↓, Enter to select, Esc to cancel",
         }
     }
 }

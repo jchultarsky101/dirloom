@@ -33,17 +33,11 @@ impl Progress {
     }
 
     /// Calculate the overall progress percentage (0-100)
+    /// Based on files processed, not bytes transferred (so skipped files count)
+    /// Returns 0% when no files have been scanned yet (backup not started)
     pub fn percentage(&self) -> f64 {
-        if self.total_bytes == 0 {
-            return 100.0;
-        }
-        (self.processed_bytes as f64 / self.total_bytes as f64) * 100.0
-    }
-
-    /// Calculate the file progress percentage (0-100)
-    pub fn file_percentage(&self) -> f64 {
         if self.total_files == 0 {
-            return 100.0;
+            return 0.0;
         }
         (self.processed_files as f64 / self.total_files as f64) * 100.0
     }
@@ -68,6 +62,7 @@ impl Progress {
     }
 
     /// Get a summary of operations
+    #[allow(dead_code)]
     pub fn summary(&self) -> String {
         format!(
             "✅ Copied: {} | 🗑️ Deleted: {} | ⏭️ Skipped: {} | ❌ Errors: {}",

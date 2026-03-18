@@ -51,7 +51,33 @@ git flow hotfix start <name>     # Start hotfix
 - Run full test suite before `feature finish`
 - Keep feature branches short-lived (rebase often)
 
-### 3. Testing Requirements
+### 3. Planning & Research Phase
+
+**Before writing any code:**
+
+1. **Understand the requirement** - Ask clarifying questions if anything is ambiguous
+2. **Break down the task** - Create a detailed todo list with small, actionable steps
+3. **Research best practices** - Search for:
+   - Existing solutions and patterns
+   - Library documentation and examples
+   - Community best practices (GitHub, Reddit, Discord, etc.)
+   - Performance considerations
+4. **Design the approach** - Consider:
+   - Architecture and module structure
+   - Error handling strategy
+   - Testing strategy
+   - User experience (for UI features)
+5. **Present the plan** - Share the planned approach before implementation
+
+**Research Resources:**
+- Official documentation (always first)
+- GitHub issues and discussions
+- Reddit (r/rust, r/programming)
+- Discord communities (Rust, TUI, etc.)
+- Existing open-source projects with similar features
+- Academic papers or blog posts for complex algorithms
+
+### 4. Testing Requirements
 
 **All new features MUST include:**
 - Unit tests for core logic and edge cases
@@ -118,6 +144,48 @@ cargo test             # All tests must pass
 - **Error handling**: Use `Result` and `Option` idiomatically
 - **No panics**: Handle errors gracefully in user-facing code
 - **Type safety**: Leverage Rust's type system to prevent bugs
+
+### 7. Learning & Retrospectives
+
+**After completing each major feature:**
+
+1. **Summarize what was built** - Brief description of the feature
+2. **Document challenges faced** - What problems were encountered?
+3. **Record solutions found** - How were problems solved?
+4. **Capture best practices learned** - What patterns or techniques worked well?
+5. **Note what could be improved** - What would you do differently next time?
+6. **Update relevant documentation** - Ensure README, CLAUDE.md, etc. reflect changes
+
+**Retrospective Template:**
+```markdown
+## Feature: [Feature Name]
+
+### Summary
+[Brief description of what was implemented]
+
+### Challenges
+- [Challenge 1]: [Description]
+- [Challenge 2]: [Description]
+
+### Solutions
+- [Solution 1]: [How it was solved]
+- [Solution 2]: [How it was solved]
+
+### Best Practices Learned
+- [Practice 1]: [Description]
+- [Practice 2]: [Description]
+
+### Improvements for Next Time
+- [Improvement 1]: [What to do differently]
+- [Improvement 2]: [What to do differently]
+```
+
+**Why this matters:**
+- Improves future development speed
+- Builds institutional knowledge
+- Helps identify recurring patterns
+- Makes onboarding easier
+- Encourages continuous improvement
 
 ## Development Commands
 
@@ -257,3 +325,6 @@ dirloom/
 - **Logging**: Use `tracing` for debuggable code
 - **Benchmarks**: Add benchmarks for performance-critical code
 - **Security**: Validate inputs, handle paths safely, no hardcoded secrets
+
+## Qwen Added Memories
+- User is developing an open source Rust CLI TUI backup tool called "dirloom" at https://github.com/jchultarsky101/dirloom.git. The project uses Git Flow workflow, cargo-dist for releases, clap for CLI, ratatui for TUI, tracing for logging, thiserror for errors, and rayon for parallel processing.

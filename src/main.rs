@@ -10,22 +10,15 @@ use crossterm::terminal::{self, EnterAlternateScreen, LeaveAlternateScreen};
 use ratatui::Terminal;
 use ratatui::backend::CrosstermBackend;
 use tracing::info;
-use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 
 use backup::sync::SyncMode as BackupSyncMode;
 use cli::{Args, SyncMode};
 use tui::App;
 
 fn main() -> ExitCode {
-    // Initialize tracing with RUST_LOG environment variable support
-    init_tracing();
-
     let args = Args::parse();
 
-    info!("🚀 Dirloom starting");
-    info!("📁 Source: {}", args.source.display());
-    info!("📁 Destination: {}", args.destination.display());
-    info!("🔄 Mode: {:?}", args.mode);
+    // Note: tracing is initialized by the TUI with log buffer
 
     // Validate paths
     if !args.source.exists() {
@@ -44,11 +37,17 @@ fn main() -> ExitCode {
         return ExitCode::FAILURE;
     }
 
+    info!("🚀 Dirloom starting");
+    info!("📁 Source: {}", args.source.display());
+    info!("📁 Destination: {}", args.destination.display());
+    info!("🔄 Mode: {:?}", args.mode);
+
     // Convert CLI sync mode to backup sync mode
     let mode = match args.mode {
         SyncMode::Mirror => BackupSyncMode::Mirror,
         SyncMode::Incremental => BackupSyncMode::Incremental,
         SyncMode::Update => BackupSyncMode::Update,
+        SyncMode::Force => BackupSyncMode::Force,
     };
 
     // Create and run the TUI application
@@ -70,24 +69,6 @@ fn main() -> ExitCode {
             ExitCode::FAILURE
         }
     }
-}
-
-/// Initialize tracing subscriber with RUST_LOG environment variable support
-fn init_tracing() {
-    let filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new("info").add_directive("dirloom=debug".parse().unwrap()));
-
-    tracing_subscriber::registry()
-        .with(filter)
-        .with(
-            tracing_subscriber::fmt::layer()
-                .with_target(false)
-                .with_thread_ids(false)
-                .with_thread_names(false)
-                .pretty()
-                .with_ansi(true),
-        )
-        .init();
 }
 
 /// Run the TUI application with proper terminal setup
